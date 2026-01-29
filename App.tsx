@@ -1,118 +1,95 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import MainNavigation from '@navigation/MainNavigation';
+import { Provider, useDispatch } from 'react-redux';
+import store, { AppDispatch } from './Redux/store';
+import { AlertNotificationRoot } from 'react-native-alert-notification';
+import { getUserAddress, getUserFromLocal } from '@redux/Auth/helper';
+import { AuthUser, UserAddress } from '@project-types/index';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+  addUserAddress,
+  login,
+  setIsAuthenticated,
+  setNotification,
+  updateUserSettings,
+} from '@redux/Auth/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addNotificationToken, getDropDownList, getUserSettingsData } from '@api/user';
+import { addDropDownItem } from '@redux/Common/dropDownSlice';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+const AppInit = () => {
+  const [isReady, setIsReady] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  // const firebaseConfig = {
+  //   apiKey: 'AIzaSyDh07LMqtLA5DgnKUKUdIIb5ZmPQ9Ja9Kc',
+  //   authDomain: 'flourish-9846f.firebaseapp.com',
+  //   projectId: 'flourish-9846f',
+  //   storageBucket: 'flourish-9846f.appspot.com',
+  //   messagingSenderId: '370251750839',
+  //   appId: '1:370251750839:ios:4997ba1491246bb7969c32',
+  // };
+  
+ 
+  const run = async () => {
+    try {
+      // if (!firebase.apps.length) {
+      //   firebase.initializeApp(firebaseConfig);
+      // }
+      const localUserData = (await getUserFromLocal()) as AuthUser;
+      const localUserAddress = (await getUserAddress()) as UserAddress;
+      if (localUserData) {
+        dispatch(login(localUserData));
+        dispatch(setIsAuthenticated(true));
+        let fcmToken: any = await AsyncStorage.getItem('fcmToken');
+        if (fcmToken) {
+          const body = {
+            notification_token: fcmToken,
+          };
+          const data = (await addNotificationToken(body, localUserData?.token!)) as any;
+          console.log(data);
+          dispatch(setNotification(data))
+        }
+       
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+    }
   };
+  useEffect(() => {
+    run();
+  }, []);
 
+  if (isReady) {
+    return <MainNavigation />;
+  } else {
+    return false;
+  }
+};
+
+const App = () => {
+  // useEffect(() => {
+  //   requestUserPermission().then((result: any) => {
+  //     if(result) {
+  //       AsyncStorage.setItem('fcmToken', result);
+  //     }
+  //   }).catch((error: any) => {
+  //     console.log(error);
+  //   })
+  // }, []);
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <NavigationContainer>
+          <AlertNotificationRoot>
+            <AppInit />
+            <MainNavigation />
+          </AlertNotificationRoot>
+        </NavigationContainer>
+      </Provider>
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+};
 
 export default App;
