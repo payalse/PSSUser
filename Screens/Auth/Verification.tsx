@@ -20,7 +20,7 @@ import { addNotificationToken, getDropDownList, getUserSettingsData } from '@api
 import { addDropDownItem } from '@redux/Common/dropDownSlice';
 
 const Verification = ({ route }: any) => {
-  const { screenType, email, _id } = route.params;
+  const { screenType, email, _id } = route.params ?? {};
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<any>();
   const [loading, setLoading] = useState<boolean>(false);

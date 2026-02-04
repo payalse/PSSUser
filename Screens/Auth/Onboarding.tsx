@@ -71,20 +71,22 @@ const Onboarding = () => {
           </Typography>
         );
       }
+      return (
+        <Text key={index}>
+          {' ' + word}
+        </Text>
+      );
     });
   };
 
   return (
-    <View
-      style={{
-        backgroundColor: '#3F1B5B',
-      }}
-    >
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={{ flex: 1, position: 'relative' }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
       >
-        <ImageBackground
+        {/* <ImageBackground
           imageStyle={{
             borderBottomLeftRadius: 50,
             borderBottomRightRadius: 50,
@@ -95,8 +97,8 @@ const Onboarding = () => {
             width: widthPercentageToDP('100%'),
             marginBottom: 100,
           }}
-        >
-          {currentIndex != 2 && (
+        > */}
+        {currentIndex != 2 && (
             <Typography
               onPress={() => navigation.navigate('Login')}
               containerStyle={{
@@ -136,6 +138,7 @@ const Onboarding = () => {
               }}
               style={{
                 textAlign: 'center',
+                color: '#000',
               }}
             >
               {makeTextHighlight(WrapperData[currentIndex].title)}
@@ -146,8 +149,8 @@ const Onboarding = () => {
               }}
               style={{
                 textAlign: 'center',
-                color: '#fff',
-                opacity: 0.5,
+                color: '#666',
+                opacity: 0.8,
                 lineHeight: 22,
                 fontSize: 13,
                 marginTop: 10,
@@ -163,9 +166,10 @@ const Onboarding = () => {
               />
             </TouchableOpacity>
           </View>
-        </ImageBackground>
+        {/* </ImageBackground> */}
       </ScrollView>
-    </View>)
+    </View>
+  )
 };
 export default Onboarding;
 

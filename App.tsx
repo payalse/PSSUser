@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import MainNavigation from '@navigation/MainNavigation';
 import { Provider, useDispatch } from 'react-redux';
@@ -55,17 +56,17 @@ const AppInit = () => {
     } catch (error) {
       console.log(error);
     } finally {
+      setIsReady(true);
     }
   };
   useEffect(() => {
     run();
   }, []);
 
-  if (isReady) {
-    return <MainNavigation />;
-  } else {
-    return false;
+  if (!isReady) {
+    return null;
   }
+  return <MainNavigation />;
 };
 
 const App = () => {
@@ -79,16 +80,15 @@ const App = () => {
   //   })
   // }, []);
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Provider store={store}>
-        <NavigationContainer>
-          <AlertNotificationRoot>
-            <AppInit />
-            <MainNavigation />
-          </AlertNotificationRoot>
-        </NavigationContainer>
-      </Provider>
-    </SafeAreaView>
+      <SafeAreaView style={{ flex: 1 }}>
+        <Provider store={store}>
+          <NavigationContainer>
+            <AlertNotificationRoot>
+              <AppInit />
+            </AlertNotificationRoot>
+          </NavigationContainer>
+        </Provider>
+      </SafeAreaView>
   );
 };
 
